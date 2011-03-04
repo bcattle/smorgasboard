@@ -51,24 +51,30 @@ class Part(models.Model):
 		ordering = ['type','subtype','value','created']
 		unique_together = ('supplier', 'pn')
 
+class BoardSubsection(models.Model):
+	name = models.CharField(max_length=100, unique=True)
+	comment = models.CharField(max_length=200, blank=True)
+
 class PartLine(models.Model):
+	subsection = models.ForeignKey(BoardSubsection)
 	part = models.ForeignKey(Part)
 	quantity = models.PositiveSmallIntegerField(default = 0)
 	def __unicode__(self):
 		return 'p/n ' + self.part.pn + ': ' + str(self.quantity)
-#	class Meta:
-		
+	class Meta:
+		unique_together = ('subsection', 'part')
+	
 class Board(models.Model):
 	pn = models.CharField(max_length=50)		# Karem part number
 	rev = models.CharField(max_length=10)
 	desc = models.CharField(max_length=200)
-	partlines = models.ManyToManyField(PartLine, blank=True)
+	subsections = models.ManyToManyField(BoardSubsection, blank=True)
 	created = models.DateTimeField(auto_now_add=True)
 	def __unicode__(self):
 		return self.pn + '.' + self.rev + ': ' + self.desc
 	class Meta:
 		unique_together = ('pn', 'rev')
-
+	
 class Order(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	boards = models.ManyToManyField(Board)
