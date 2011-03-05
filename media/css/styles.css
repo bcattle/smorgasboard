@@ -1,0 +1,13 @@
+.partsTableContainer {
+						float:left;
+						width:auto;
+					}
+					
+.tableFilter		{
+						float:left;
+						width:10em;
+					}
+					
+.filterText			{
+						font-size:13px;
+					}

@@ -3,6 +3,8 @@ import os
 # Django settings for smorgasboard project.
 ROOT_PATH = os.path.dirname(__file__)
 
+ROOT_URL = 'http://127.0.0.1:8000/'
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -46,14 +48,19 @@ USE_I18N = True
 # calendars according to the current locale
 USE_L10N = True
 
+# Filesystem path to static files
+STATIC_ROOT = os.path.join(ROOT_PATH, 'media')
+STATIC_PATH = 'site_media/'
+STATIC_URL = ROOT_URL + STATIC_PATH
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = os.path.join(ROOT_PATH, 'media')
+MEDIA_ROOT = os.path.join(ROOT_PATH, 'upload')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://127.0.0.1:8000/media/'
+MEDIA_URL = ROOT_URL + 'upload/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.

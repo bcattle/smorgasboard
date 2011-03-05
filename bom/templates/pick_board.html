@@ -1,12 +1,11 @@
-<html>
-	<head>
-		<title>Smorgasboard : Pick a board</title>
-	</head>
-	<body>
-		<p>Pick a board:</p>
-		<form action="/smorgasboard/" method="post">
-			{{ form.as_p }}
-			<input type="submit" value="Submit" />
-		</form>
-	</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Smorgasboard : Pick a board{% endblock %}
+
+{% block content %}
+	<p>Pick a board:</p>
+	<form action="/smorgasboard/" method="post">
+		{{ form.as_p }}
+		<input type="submit" value="Submit" />
+	</form>
+{% endblock %}

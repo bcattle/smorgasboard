@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Smorgasboard : {{ board.pn }}.{{ board.rev }}{% endblock %}
+
+{% block header %}
+	<h1>{{ board.pn }}.{{ board.rev }} : {{ board.desc }}</h1>
+	<ul>
+		<li><a href="{% url board-change %}">Change board</a></li>
+		<li><a href="{% url order %}">Orders</a></li>
+		<li><a href="{% url parts %}">Parts</a></li>
+	</ul>
+	
+	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/demo_table_jui.css" />
+	<script src="{{ STATIC_URL }}js/jquery.dataTables.js"></script>
+{% endblock %}
+
+{% block content %}
+	<script>
+		$(document).ready(function() {
+			var dtConfBoard = {
+				"bPaginate": false,
+				"bLengthChange": false,
+				"bFilter": true,
+				"bSort": true,
+				"bInfo": false,
+				"bAutoWidth": true,
+				"aaSorting": [[0,'asc'], [1,'asc'], [2,'asc']],
+				"aoColumns": [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					{ "bSortable": false },
+					null,
+					null,
+					null,
+					null
+				],
+				"sDom": '<f>lrtip',				
+			};
+			
+			var dtConfOther = {
+				"bPaginate": false,
+				"bLengthChange": false,
+				"bFilter": true,
+				"bSort": true,
+				"bInfo": false,
+				"bAutoWidth": true,
+				"aaSorting": [[0,'asc'], [1,'asc'], [2,'asc']],
+				"aoColumns": [
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					{ "bSortable": false },
+					null,
+					null,
+					null
+				],
+				"sDom": '<f>lrtip'
+			};
+			
+			{% if lines %}
+				$('#boardPartsTable').dataTable(dtConfBoard);
+			{% endif %}
+			{% if otherParts %}
+				$('#otherPartsTable').dataTable(dtConfOther);
+			{% endif %}
+		} );
+	</script>
+
+	<div class="tableControl">
+		<form action="">
+			<label for="cmdToggleComments">Show comment:</label><input type="checkbox" id="cmdToggleComments" checked="checked" onchange="" />
+			<label for="cmdToggleSupplier">Show supplier:</label><input type="checkbox" id="cmdToggleSupplier" checked="checked" onchange="" />
+		</form>
+	</div>
+
+	<div class="newPart">
+	</div>
+	
+	{% if lines %}
+		<div class="box">
+			<div class="partsTableContainer">
+				<table id="boardPartsTable">
+					<thead>
+						<tr>
+							<th>Type</th>
+							<th>Subtype</th>
+							<th>Value</th>
+							<th>Desc</th>
+							<th>Comment</th>
+							<th>Package</th>
+							<th>Mfr</th>
+							<th>Supplier</th>
+							<th>pn</th>
+							<th></th>
+							<th>Price</th>
+							<th>MinQty</th>
+							<th>In stock</th>
+							<th>Qty</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for line in lines %}
+						<tr>
+							<td>{{ line.part.type.name }}</td>
+							<td>{{ line.part.subtype.name }}</td>
+							<td>{{ line.part.value }}</td>
+							<td>{{ line.part.desc }}</td>
+							<td>{{ line.part.comment }}</td>
+							<td>{{ line.part.package }}</td>
+							<td>{{ line.part.mfr }}</td>
+							<td>{{ line.part.supplier.abbr }}</td>
+							<td>
+								{% if line.part.supplierUrl %}
+									<a href="{{ line.part.supplierUrl }}">{{ line.part.pn }}</a>
+								{% else %}
+									{{ line.part.pn }}
+								{% endif %}
+							</td>
+							<td>
+								{% if line.part.datasheet %}
+									<a href="{{ line.part.datasheet }}"><img src="{{ STATIC_URL }}images/ico_datasheet.png" height="16" width="16" /></a>
+								{% endif %}
+							</td>
+							<td>{{ line.part.price }}</td>
+							<td>{{ line.part.minQty }}</td>
+							<td>
+								{% if line.part.inStock %}
+									<img src="{{ STATIC_URL }}images/ico_yes.png" height="16" width="16" />
+								{% else %}
+									<img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" />
+								{% endif %}
+							</td>
+							<td>{{ line.qty }}</td>
+							<td>
+								<a href=""><img src="{{ STATIC_URL }}images/ico_minus.png" height="16" width="16" /></a>
+								<a href=""><img src="{{ STATIC_URL }}images/ico_plus.png" height="16" width="16" /></a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<div class="tableFilter">
+				<div class="filterBlock" id="partsTableSearch">
+				</div>
+				<div class="filterBlock">
+					<ul>
+						{% for type in boardTypes %}
+							<li>
+								<a href="">{{ type }}</a>
+								{% for subType in boardSubTypes %}
+									<ul>
+										{% if subType.type == type %}
+											<li><a href="">{{ subType.name }}</a></li>
+										{% endif %}
+									</ul>
+								{% endfor %}
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+				<div class="filterBlock">
+					<ul>
+						{% for package in boardPackages %}
+							<li><a href="">{{ package }}</a></li>
+						{% endfor %}
+					</ul>
+				</div>
+				<div class="filterBlock">
+					<div class="filterText">
+						Double-click or hover and press 'e' to edit. Shift-click to sort on multiple columns.
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	
+	{% if otherParts %}
+		<div id="partsTableContainer">
+			<table id="otherPartsTable">
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Subtype</th>
+						<th>Value</th>
+						<th>Desc</th>
+						<th>Comment</th>
+						<th>Package</th>
+						<th>Mfr</th>
+						<th>Supplier</th>
+						<th>pn</th>
+						<th></th>
+						<th>Price</th>
+						<th>MinQty</th>
+						<th>In stock</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for part in otherParts %}
+					<tr>
+						<td>{{ part.type.name }}</td>
+						<td>{{ part.subtype.name }}</td>
+						<td>{{ part.value }}</td>
+						<td>{{ part.desc }}</td>
+						<td>{{ part.comment }}</td>
+						<td>{{ part.package }}</td>
+						<td>{{ part.mfr }}</td>
+						<td>{{ part.supplier.abbr }}</td>
+						<td>
+							{% if part.supplierUrl %}
+								<a href="{{ part.supplierUrl }}">{{ part.pn }}</a>
+							{% else %}
+								{{ part.pn }}
+							{% endif %}
+						</td>
+						<td>
+							{% if part.datasheet %}
+								<a href="{{ part.datasheet }}"><img src="{{ STATIC_URL }}images/ico_datasheet.png" height="16" width="16" /></a>
+							{% endif %}
+						</td>
+						<td>{{ part.price }}</td>
+						<td>{{ part.minQty }}</td>
+						<td>
+							{% if part.inStock %}
+								<img src="{{ STATIC_URL }}images/ico_yes.png" height="16" width="16" />
+							{% else %}
+								<img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" />
+							{% endif %}
+						</td>
+						<td><a href=""><img src="{{ STATIC_URL }}images/ico_promote.png" height="16" width="16" /></a></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="tableFilter">
+			<div class="filterBlock">
+				<ul>
+					{% for type in otherTypes %}
+						<li>
+							<a href="">{{ type }}</a>
+							{% for subType in otherSubTypes %}
+								<ul>
+									{% if subType.type == type %}
+										<li><a href="">{{ subType.name }}</a></li>
+									{% endif %}
+								</ul>
+							{% endfor %}
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+			<div class="filterBlock">
+				<ul>
+					{% for package in otherPackages %}
+						<li><a href="">{{ package }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		
+	{% endif %}
+{% endblock %}

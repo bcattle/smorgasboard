@@ -13,7 +13,7 @@ class BoardAdmin(admin.ModelAdmin):
 	list_display = ('pn', 'rev', 'desc', 'created')
 	
 class OrderAdmin(admin.ModelAdmin):
-	list_display = ('created', 'comment')
+	list_display = ('created',  'supplier', 'comment')
 	
 admin.site.register(Supplier)
 admin.site.register(PartType)

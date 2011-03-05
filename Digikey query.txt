@@ -1,0 +1,29 @@
+http://ordering.digikey.com/Ordering/AddPart.aspx?
+fastAddPart1=709-1110-ND&
+fastAddPart2=709-1221-ND&
+fastAddPart3=SSM1005PD-KIT-ND&
+fastAddPart4=MAX15006BATT%2bTCT-ND&
+fastAddPart5=SPB17N80C3INCT-ND&
+fastAddPart6=ED90336-ND&
+fastAddPart7=24383K-ND&
+fastAddPart8=HKC10H-ND&
+fastAddPart9=381-2355-ND&
+fastAddCount=9
+
+
+
+AddPart.aspx:
+Quantity 	Part Number		Customer ref	
+
+<input type="submit" 
+name="ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$btnAddToOrder" 
+value="Add to Order" 
+onclick="javascript:
+	WebForm_DoPostBackWithOptions(
+		new WebForm_PostBackOptions(&quot;ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$btnAddToOrder&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))" 
+id="ctl00_ctl00_mainContentPlaceHolder_mainContentPlaceHolder_btnAddToOrder">
+
+
+
+
+ctl00$ctl00$mainContentPlaceHolder$mainContentPlaceHolder$txtQty1
