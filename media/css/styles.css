@@ -1,13 +1,23 @@
+.box				{
+						width:100%;
+					}
+
 .partsTableContainer {
 						float:left;
 						width:auto;
 					}
 					
 .tableFilter		{
-						float:left;
+						float:right;
 						width:10em;
 					}
 					
 .filterText			{
 						font-size:13px;
+					}
+					
+.navList li			{
+						display: inline;
+						list-style-type: none;
+						padding:0px 10px;
 					}

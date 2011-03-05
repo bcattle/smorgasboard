@@ -1,20 +1,12 @@
 {% extends "base.html" %}
+{% load query_string %}
 
-{% block title %}Smorgasboard : {{ board.pn }}.{{ board.rev }}{% endblock %}
+{% block title %}{{ board.pn }}.{{ board.rev }} : Smorgasboard{% endblock %}
 
 {% block header %}
-	<h1>{{ board.pn }}.{{ board.rev }} : {{ board.desc }}</h1>
-	<ul>
-		<li><a href="{% url board-change %}">Change board</a></li>
-		<li><a href="{% url order %}">Orders</a></li>
-		<li><a href="{% url parts %}">Parts</a></li>
-	</ul>
-	
 	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/demo_table_jui.css" />
 	<script src="{{ STATIC_URL }}js/jquery.dataTables.js"></script>
-{% endblock %}
-
-{% block content %}
+	<script src="{{ STATIC_URL }}js/board.js"></script>
 	<script>
 		$(document).ready(function() {
 			var dtConfBoard = {
@@ -39,7 +31,8 @@
 					null,
 					null,
 					null,
-					null
+					null,
+					{ "bSortable": false }
 				],
 				"sDom": '<f>lrtip',				
 			};
@@ -65,32 +58,106 @@
 					{ "bSortable": false },
 					null,
 					null,
-					null
+					null,
+					{ "bSortable": false }
 				],
 				"sDom": '<f>lrtip'
 			};
-			
+		
 			{% if lines %}
 				$('#boardPartsTable').dataTable(dtConfBoard);
 			{% endif %}
 			{% if otherParts %}
 				$('#otherPartsTable').dataTable(dtConfOther);
 			{% endif %}
+			
+			// Off to begin
+			toggleCommentCol();
+			toggleSupplierCol();
 		} );
+		
+		function toggleCommentCol() {
+			$('.commentCol').toggle();
+		}
+		function toggleSupplierCol() {
+			$('.supplierCol').toggle();
+		}
+		
+		function editPartLine(id){
+			post_to_url('{{ path }}', {'partLine': id});
+		}
+		function editPart(id){
+			post_to_url('{{ path }}', {'part': id});
+		}
+		function addPartLine(id){
+			post_to_url('{{ path }}', {'addPartLine': id});
+		}
+		function subtractPartLine(id){
+			post_to_url('{{ path }}', {'subtractPartLine': id});
+		}
 	</script>
-
-	<div class="tableControl">
-		<form action="">
-			<label for="cmdToggleComments">Show comment:</label><input type="checkbox" id="cmdToggleComments" checked="checked" onchange="" />
-			<label for="cmdToggleSupplier">Show supplier:</label><input type="checkbox" id="cmdToggleSupplier" checked="checked" onchange="" />
-		</form>
-	</div>
-
-	<div class="newPart">
-	</div>
 	
-	{% if lines %}
-		<div class="box">
+	<h1>{{ board.pn }}.{{ board.rev }} : {{ board.desc }}</h1>
+	<div class="navBar">
+		<ul class="navList">
+			<li><a href="{% url board-change %}">Change board</a></li>
+			<li><a href="{% url order %}">Orders</a></li>
+			<li><a href="{% url parts %}">Parts</a></li>
+			<li><a href="">Convert to order</a></li>
+			<li><a href="">Download <img src="{{ STATIC_URL }}images/ico_excel.png" /></a></li>
+		</ul>
+	</div>
+{% endblock %}
+
+{% block content %}
+	<div class="box">
+		<div class="quickAdd" style="float:left">
+			<a href="#">Add part</a>
+			<form action="">
+				<label for="txtQuickPn">pn:</label><input type="text" id="txtQuickPn" />
+			</form>
+		</div>
+		<div class="tableControl" style="float:right">
+			<form action="">
+				<label for="cmdToggleComments">Show comment:</label><input type="checkbox" id="cmdToggleComments" onchange="toggleCommentCol()" />
+				<label for="cmdToggleSupplier">Show supplier:</label><input type="checkbox" id="cmdToggleSupplier" onchange="toggleSupplierCol()" />
+			</form>
+		</div>
+	</div>
+	<div class="box">
+		<div class="fullAdd" style="display: none;">
+			<form action="">
+				<table id="newPartTable">
+					<thead>
+						<tr>
+							<th>Type</th>
+							<th>Subtype</th>
+							<th>Value</th>
+							<th>Desc</th>
+							<th class="commentCol">Comment</th>
+							<th>Package</th>
+							<th>Mfr</th>
+							<th class="supplierCol">Supplier</th>
+							<th>pn</th>
+							<th></th>
+							<th>Price</th>
+							<th>MinQty</th>
+							<th>Stock</th>
+							<th>Qty</th>
+							<th></th>
+						</tr>
+					</thead>
+						<tr>
+							
+						</tr>
+					<tbody>
+					</tbody>
+				</table>
+			</form>
+		</div>
+	</div>
+	<div class="box">
+		{% if lines %}
 			<div class="partsTableContainer">
 				<table id="boardPartsTable">
 					<thead>
@@ -99,16 +166,17 @@
 							<th>Subtype</th>
 							<th>Value</th>
 							<th>Desc</th>
-							<th>Comment</th>
+							<th class="commentCol">Comment</th>
 							<th>Package</th>
 							<th>Mfr</th>
-							<th>Supplier</th>
+							<th class="supplierCol">Supplier</th>
 							<th>pn</th>
 							<th></th>
 							<th>Price</th>
 							<th>MinQty</th>
-							<th>In stock</th>
+							<th>Stock</th>
 							<th>Qty</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -118,10 +186,10 @@
 							<td>{{ line.part.subtype.name }}</td>
 							<td>{{ line.part.value }}</td>
 							<td>{{ line.part.desc }}</td>
-							<td>{{ line.part.comment }}</td>
+							<td class="commentCol">{{ line.part.comment }}</td>
 							<td>{{ line.part.package }}</td>
 							<td>{{ line.part.mfr }}</td>
-							<td>{{ line.part.supplier.abbr }}</td>
+							<td class="supplierCol">{{ line.part.supplier.abbr }}</td>
 							<td>
 								{% if line.part.supplierUrl %}
 									<a href="{{ line.part.supplierUrl }}">{{ line.part.pn }}</a>
@@ -134,128 +202,53 @@
 									<a href="{{ line.part.datasheet }}"><img src="{{ STATIC_URL }}images/ico_datasheet.png" height="16" width="16" /></a>
 								{% endif %}
 							</td>
-							<td>{{ line.part.price }}</td>
+							<td>
+								{% if line.part.price < 1 %}
+									${{ line.part.price|floatformat:3 }}
+								{% else %}
+									${{ line.part.price|floatformat:2 }}
+								{% endif %}
+							</td>
 							<td>{{ line.part.minQty }}</td>
 							<td>
 								{% if line.part.inStock %}
 									<img src="{{ STATIC_URL }}images/ico_yes.png" height="16" width="16" />
 								{% else %}
-									<img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" />
+									<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a>
 								{% endif %}
 							</td>
 							<td>{{ line.qty }}</td>
 							<td>
-								<a href=""><img src="{{ STATIC_URL }}images/ico_minus.png" height="16" width="16" /></a>
-								<a href=""><img src="{{ STATIC_URL }}images/ico_plus.png" height="16" width="16" /></a>
+								<a href="#" onclick="subtractPartLine({{ line.id }});"><img src="{{ STATIC_URL }}images/ico_minus.png" height="16" width="16" /></a>
+								<a href="#" onclick="addPartLine({{ line.id }});"><img src="{{ STATIC_URL }}images/ico_plus.png" height="16" width="16" /></a>
 							</td>
 						</tr>
 						{% endfor %}
 					</tbody>
 				</table>
 			</div>
-			<div class="tableFilter">
-				<div class="filterBlock" id="partsTableSearch">
-				</div>
-				<div class="filterBlock">
-					<ul>
-						{% for type in boardTypes %}
-							<li>
-								<a href="">{{ type }}</a>
-								{% for subType in boardSubTypes %}
-									<ul>
-										{% if subType.type == type %}
-											<li><a href="">{{ subType.name }}</a></li>
-										{% endif %}
-									</ul>
-								{% endfor %}
-							</li>
-						{% endfor %}
-					</ul>
-				</div>
-				<div class="filterBlock">
-					<ul>
-						{% for package in boardPackages %}
-							<li><a href="">{{ package }}</a></li>
-						{% endfor %}
-					</ul>
-				</div>
-				<div class="filterBlock">
-					<div class="filterText">
-						Double-click or hover and press 'e' to edit. Shift-click to sort on multiple columns.
-					</div>
-				</div>
-			</div>
-		</div>
-	{% endif %}
-	
-	{% if otherParts %}
-		<div id="partsTableContainer">
-			<table id="otherPartsTable">
-				<thead>
-					<tr>
-						<th>Type</th>
-						<th>Subtype</th>
-						<th>Value</th>
-						<th>Desc</th>
-						<th>Comment</th>
-						<th>Package</th>
-						<th>Mfr</th>
-						<th>Supplier</th>
-						<th>pn</th>
-						<th></th>
-						<th>Price</th>
-						<th>MinQty</th>
-						<th>In stock</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for part in otherParts %}
-					<tr>
-						<td>{{ part.type.name }}</td>
-						<td>{{ part.subtype.name }}</td>
-						<td>{{ part.value }}</td>
-						<td>{{ part.desc }}</td>
-						<td>{{ part.comment }}</td>
-						<td>{{ part.package }}</td>
-						<td>{{ part.mfr }}</td>
-						<td>{{ part.supplier.abbr }}</td>
-						<td>
-							{% if part.supplierUrl %}
-								<a href="{{ part.supplierUrl }}">{{ part.pn }}</a>
-							{% else %}
-								{{ part.pn }}
-							{% endif %}
-						</td>
-						<td>
-							{% if part.datasheet %}
-								<a href="{{ part.datasheet }}"><img src="{{ STATIC_URL }}images/ico_datasheet.png" height="16" width="16" /></a>
-							{% endif %}
-						</td>
-						<td>{{ part.price }}</td>
-						<td>{{ part.minQty }}</td>
-						<td>
-							{% if part.inStock %}
-								<img src="{{ STATIC_URL }}images/ico_yes.png" height="16" width="16" />
-							{% else %}
-								<img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" />
-							{% endif %}
-						</td>
-						<td><a href=""><img src="{{ STATIC_URL }}images/ico_promote.png" height="16" width="16" /></a></td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+		{% endif %}
 		<div class="tableFilter">
+			<div class="filterBlock" id="partsTableSearch">
+			</div>
 			<div class="filterBlock">
 				<ul>
-					{% for type in otherTypes %}
-						<li>
-							<a href="">{{ type }}</a>
-							{% for subType in otherSubTypes %}
+					{% for type in boardTypes %}
+						{% if type in boardFilters %}
+							<li class="currentFilter">{{ type }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a>
+						{% else %}
+							<li><a href="{{ path }}?board:type__id__exact={{ type.id }}">{{ type }}</a>
+						{% endif %}
+							{% for subType in boardSubTypes %}
 								<ul>
 									{% if subType.type == type %}
-										<li><a href="">{{ subType.name }}</a></li>
+										{% if subType in boardFilters %}
+											<li class="currentFilter">
+												{{ subType.name }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a>
+											</li>
+										{% else %}
+											<li><a href="{{ path }}?board:subtype__id__exact={{ subType.id }}">{{ subType.name }}</a></li>
+										{% endif %}
 									{% endif %}
 								</ul>
 							{% endfor %}
@@ -265,12 +258,127 @@
 			</div>
 			<div class="filterBlock">
 				<ul>
-					{% for package in otherPackages %}
-						<li><a href="">{{ package }}</a></li>
+					{% for package in boardPackages %}
+						{% if package %}
+							{% if package in boardFilters %}
+								<li class="currentFilter">{{ package }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a></li>
+							{% else %}
+								<li><a href="{{ path }}?board:package={{ package }}">{{ package }}</a></li>
+							{% endif %}
+						{% endif %}
 					{% endfor %}
 				</ul>
 			</div>
+			<div class="filterBlock">
+				<div class="filterText">
+					Double-click or hover and press 'e' to edit. Shift-click to sort on multiple columns.
+				</div>
+			</div>
 		</div>
-		
-	{% endif %}
+	
+		{% if otherParts %}
+			<div class="partsTableContainer">
+				<table id="otherPartsTable">
+					<thead>
+						<tr>
+							<th>Type</th>
+							<th>Subtype</th>
+							<th>Value</th>
+							<th>Desc</th>
+							<th class="commentCol">Comment</th>
+							<th>Package</th>
+							<th>Mfr</th>
+							<th class="supplierCol">Supplier</th>
+							<th>pn</th>
+							<th></th>
+							<th>Price</th>
+							<th>MinQty</th>
+							<th>Stock</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for part in otherParts %}
+						<tr>
+							<td>{{ part.type.name }}</td>
+							<td>{{ part.subtype.name }}</td>
+							<td>{{ part.value }}</td>
+							<td>{{ part.desc }}</td>
+							<td  class="commentCol">{{ part.comment }}</td>
+							<td>{{ part.package }}</td>
+							<td>{{ part.mfr }}</td>
+							<td  class="supplierCol">{{ part.supplier.abbr }}</td>
+							<td>
+								{% if part.supplierUrl %}
+									<a href="{{ part.supplierUrl }}">{{ part.pn }}</a>
+								{% else %}
+									{{ part.pn }}
+								{% endif %}
+							</td>
+							<td>
+								{% if part.datasheet %}
+									<a href="{{ part.datasheet }}"><img src="{{ STATIC_URL }}images/ico_datasheet.png" height="16" width="16" /></a>
+								{% endif %}
+							</td>
+							<td>
+								{% if part.price < 1 %}
+									${{ part.price|floatformat:3 }}
+								{% else %}
+									${{ part.price|floatformat:2 }}
+								{% endif %}
+							</td>
+							<td>{{ part.minQty }}</td>
+							<td>
+								{% if part.inStock %}
+									<img src="{{ STATIC_URL }}images/ico_yes.png" height="16" width="16" />
+								{% else %}
+									<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a>
+								{% endif %}
+							</td>
+							<td><a href="#" onclick="editPart(part.id);"><img src="{{ STATIC_URL }}images/ico_promote.png" height="16" width="16" /></a></td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<div class="tableFilter">
+				<div class="filterBlock">
+					<ul>
+						{% for type in otherTypes %}
+							{% if type in otherFilters %}
+								<li class="currentFilter">{{ type }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a>
+							{% else %}
+								<li><a href="{{ path }}?other:type__id__exact={{ type.id }}">{{ type }}</a>
+							{% endif %}
+								{% for subType in otherSubTypes %}
+									<ul>
+										{% if subType.type == type %}
+											{% if subType in otherFilters %}
+												<li class="currentFilter">{{ subType.name }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a></li>
+											{% else %}
+												<li><a href="{{ path }}?other:subtype__id__exact={{ subType.id }}">{{ subType.name }}</a></li>
+											{% endif %}
+										{% endif %}
+									</ul>
+								{% endfor %}
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+				<div class="filterBlock">
+					<ul>
+						{% for package in otherPackages %}
+							{% if package %}
+								{% if package in otherFilters %}
+									<li class="currentFilter">{{ package }}<a href="#"><img src="{{ STATIC_URL }}images/ico_no.png" height="16" width="16" /></a></li>
+								{% else %}
+									<li><a href="{{ path }}?other:package={{ package }}">{{ package }}</a></li>
+								{% endif %}
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</div>
+			</div>
+		{% endif %}
+	</div>
 {% endblock %}
