@@ -12,7 +12,6 @@ BOARD_ERROR_URL = '/smorgasboard/'
 
 def index(request):
 	if request.method == 'POST':
-		assert False
 		form = BoardSelectForm(request.POST)
 		if form.is_valid():
 			return HttpResponseRedirect('/smorgasboard/board/' + request.POST['board'])
